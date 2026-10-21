@@ -1,0 +1,11 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+*.csv
+*.xlsx
+*.xls
+*.json
+__pycache__/
+data/
+node_modules/

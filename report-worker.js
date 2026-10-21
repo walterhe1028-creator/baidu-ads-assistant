@@ -5,7 +5,7 @@ async function init(){
  importScripts('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js');
  python=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
  for(const name of ['engine.py','model_protocol.py']){
-  const response=await fetch(new URL(name,self.location.href));
+  const response=await fetch(new URL(name+'?v=20261021-evidence',self.location.href));
   if(!response.ok)throw Error('无法载入报表引擎，请刷新重试');
   python.FS.writeFile('/home/pyodide/'+name,await response.text());
  }

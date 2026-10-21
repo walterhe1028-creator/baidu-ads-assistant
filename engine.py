@@ -331,7 +331,25 @@ def analyze(reports, config=None):
         valid = sum(pick(r, "是否有效", "有效状态") in ("是", "有效", "1", "true") for r in rr)
         classified = sum(pick(r, "是否有效", "有效状态") in ("是", "有效", "1", "true", "否", "无效", "0", "false") for r in rr)
         leads_info = {"total": len(rr), "classified": classified, "valid": valid, "rate": valid / classified if classified else None, "note": "仅跟进表已判定记录有效率；未与广告分母、去重或归因核对，不外推关键词有效率。"}
-    return {"revision": revision, "config": c, "period": {"start": start, "end": end}, "summary": {"spend": spend, "clicks": clicks, "impressions": impressions, "target": project_targets, "search_leads": search_leads, "target_cpa": round(spend / project_targets, 2) if project_targets else None, "cpc": round(spend / clicks, 2) if clicks else None, "ctr": clicks / impressions if impressions else None, "primary": KINDS.get(primary_kind, "无"), "modes": modes, "effective_leads": None}, "alerts": alerts, "reports": report_info, "recommendations": recs, "plans": aligned["plan"], "trend": recent, "leads_info": leads_info, "model": {"connected": False, "label": "规则引擎已运行 · 大模型未连接"}}
+    optimization_summary = {}
+    for kind in ("keyword", "search"):
+        groups = aligned[kind]
+        if kind not in reports:
+            continue
+        total_spend = round(sum(g["spend"] for g in groups), 2)
+        total_clicks = sum(g["clicks"] for g in groups)
+        total_impressions = sum(g["impressions"] for g in groups)
+        optimization_summary[kind] = {
+            "objects": len(groups), "spend": total_spend, "clicks": total_clicks,
+            "impressions": total_impressions,
+            "ctr": total_clicks / total_impressions if total_impressions else None,
+            "cpc": round(total_spend / total_clicks, 2) if total_clicks else None,
+            "period": {"start": start, "end": end},
+            "actions": {action: sum(r["kind"] == kind and r["action"] == action for r in recs)
+                        for action in ("添加精确否词", "新增关键词测试", "优化相关性", "核查高消耗词")},
+            "note": "本报表层级的共同周期汇总，不跨层级相加；规则候选不等于已经验证有效。"
+        }
+    return {"revision": revision, "optimization_summary": optimization_summary, "config": c, "period": {"start": start, "end": end}, "summary": {"spend": spend, "clicks": clicks, "impressions": impressions, "target": project_targets, "search_leads": search_leads, "target_cpa": round(spend / project_targets, 2) if project_targets else None, "cpc": round(spend / clicks, 2) if clicks else None, "ctr": clicks / impressions if impressions else None, "primary": KINDS.get(primary_kind, "无"), "modes": modes, "effective_leads": None}, "alerts": alerts, "reports": report_info, "recommendations": recs, "plans": aligned["plan"], "trend": recent, "leads_info": leads_info, "model": {"connected": False, "label": "规则引擎已运行 · 大模型未连接"}}
 
 
 REVIEW_HEADERS = ["建议ID", "对象类型", "计划", "计划ID", "单元", "单元ID", "对象", "对象ID", "建议动作", "修改字段", "修改前", "修改后", "判断依据", "来源周期消费", "点击", "展现", "待补充条件", "注意事项", "来源", "规则版本"]

@@ -3,7 +3,7 @@
  const DB_NAME='baidu-pages-workspace-v1';
  let apiKey='',model='',analysis,jobs={},chats=[],currentController=null,sequence=0;
  let storageError='';
- const worker=new Worker(new URL('./report-worker.js',document.currentScript.src));
+ const worker=new Worker(new URL('./report-worker.js?v=20261021-evidence',document.currentScript.src));
  const pending=new Map();
  worker.onmessage=({data})=>{const p=pending.get(data.id);if(!p)return;clearTimeout(p.timeout);pending.delete(data.id);data.error?p.reject(Error(data.error)):p.resolve(data.result);};
  worker.onerror=()=>{for(const p of pending.values()){clearTimeout(p.timeout);p.reject(Error('报表引擎加载失败，请检查网络后刷新页面'));}pending.clear();};
